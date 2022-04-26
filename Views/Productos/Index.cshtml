@@ -1,0 +1,53 @@
+﻿@model IEnumerable<LaTiendita.Models.Producto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Lista Productos</h1>
+
+<p>
+    <a asp-action="Create">Crear Producto</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.CodigoProducto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nombre)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Precio)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Detalle)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.CodigoProducto)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Precio)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Detalle)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id=item.CodigoProducto }) |
+                @Html.ActionLink("Details", "Details", new { id=item.CodigoProducto }) |
+                @Html.ActionLink("Delete", "Delete", new { id=item.CodigoProducto })
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
