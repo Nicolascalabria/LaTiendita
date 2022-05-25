@@ -1,8 +1,15 @@
+using LaTiendita.Stock;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+Microsoft.AspNetCore.Authentication.AuthenticationBuilder authenticationBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(ConfiguracionCookie);
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddDbContext<BaseDeDatos>(options => 
+  options.UseSqlite(@"filename=C:\Users\nicol\OneDrive\Escritorio\proyecto\LaTiendita\Productos.db")); 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -13,12 +20,27 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
+ static void ConfiguracionCookie(CookieAuthenticationOptions opciones)
+{
+    opciones.LoginPath = "/Home/Index";
+    opciones.AccessDeniedPath = "/Usuarios/NoAutorizado";
+    opciones.LogoutPath = "/Login/Logout";
+    opciones.ExpireTimeSpan = System.TimeSpan.FromMinutes(10);   
+
+
+
+}
+
+app.UseCookiePolicy();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
+
+ 
 
 app.MapControllerRoute(
     name: "default",

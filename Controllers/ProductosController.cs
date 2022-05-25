@@ -13,14 +13,13 @@ namespace LaTiendita.Controllers
         {
             
            
-            return View(BaseDeDatos.listaProductos);
+            return View();
         }
 
         // GET: ProductosController1/Details/5
         public ActionResult Details(int id)
         {
-            Producto productoDetalle = BaseDeDatos.listaProductos.Where(prod => prod.CodigoProducto == id).FirstOrDefault();
-            return View(productoDetalle);
+            return View();
         }
 
         // GET: ProductosController1/Create
@@ -37,8 +36,7 @@ namespace LaTiendita.Controllers
             try
             {
 
-                producto.CodigoProducto = BaseDeDatos.listaProductos.Count + 1;
-                BaseDeDatos.listaProductos.Add(producto);  
+                 
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -50,8 +48,8 @@ namespace LaTiendita.Controllers
         // GET: ProductosController1/Edit/5
         public ActionResult Edit(int id)
         {
-            Producto productoAEditar = BaseDeDatos.listaProductos.Where(prod => prod.CodigoProducto == id).FirstOrDefault();
-            return View(productoAEditar);
+           
+            return View();
         }
 
         // POST: ProductosController1/Edit/5
@@ -61,10 +59,7 @@ namespace LaTiendita.Controllers
         {
             try
             {
-                Producto productoAEditar = BaseDeDatos.listaProductos.Where(prod => prod.CodigoProducto == id).FirstOrDefault();
-                productoAEditar.Nombre = nombre;
-                productoAEditar.Precio = precio;
-                productoAEditar.Detalle = detalle;
+                
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -76,8 +71,8 @@ namespace LaTiendita.Controllers
         // GET: ProductosController1/Delete/5
         public ActionResult Delete(int id)
         {
-            Producto productoABorrar = BaseDeDatos.listaProductos.Where(prod => prod.CodigoProducto == id).FirstOrDefault();
-            return View(productoABorrar);
+            
+            return View();
         }
 
         // POST: ProductosController1/Delete/5
@@ -87,8 +82,7 @@ namespace LaTiendita.Controllers
         {
             try
             {
-                Producto productoABorrar = BaseDeDatos.listaProductos.Where(prod => prod.CodigoProducto == id).FirstOrDefault(); 
-                BaseDeDatos.listaProductos.Remove(productoABorrar); 
+               
                 return RedirectToAction(nameof(Index));
             }
             catch
