@@ -20,6 +20,8 @@ namespace LaTiendita.Stock
 
         public DbSet<LaTiendita.Models.Talle> Talles { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<LaTiendita.Models.ProductoTalle> ProductoTalle { get; set; }
+        public DbSet<LaTiendita.Models.ProductoBis> ProductoBis { get; set; }
 
     }
 }

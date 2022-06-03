@@ -22,7 +22,7 @@ namespace LaTiendita.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return View();
+            return View("Index2");
 
         }
 
@@ -78,7 +78,7 @@ namespace LaTiendita.Controllers
                     ClaimsPrincipal principal = new ClaimsPrincipal(identity);
                     //En este apso se hace el login del usuario al sistema
                     HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal).Wait();
-                    return RedirectToAction("Index", "Categorias");
+                    return RedirectToAction("Index", "Catalogo");
                 }
                 else
                 {

@@ -1,0 +1,132 @@
+﻿@model LaTiendita.Models.ProductoBis
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+
+<h4>ProductoBis</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ProductoId" />
+            <div class="form-group">
+                <label asp-for="Nombre" class="control-label"></label>
+                <input asp-for="Nombre" class="form-control" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Precio" class="control-label"></label>
+                <input asp-for="Precio" class="form-control" />
+                <span asp-validation-for="Precio" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Detalle" class="control-label"></label>
+                <input asp-for="Detalle" class="form-control" />
+                <span asp-validation-for="Detalle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CategoriaId" class="control-label"></label>
+                <select asp-for="CategoriaId" class="form-control" asp-items="ViewBag.CategoriaId"></select>
+                <span asp-validation-for="CategoriaId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+             <label>Nuevo Horario : </label>
+            <input class="form-control" 
+                   type="text" 
+                   data-val="true"
+                   data-val-required="The Fecha de Creacion de la Cita field is required." 
+                   id="FechaNueva" 
+                   name="FechaNueva" 
+                   style="display:inline"
+                   aria-describedby="FechaNueva-error" aria-invalid="false">
+            <button onclick="AgregarFecha()" type="button">Agregar</button>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            Fecha
+                        </th>
+                        <th>
+                            Id
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ProductoTalle)
+                    {
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(modelItem => item.Talle, "{0:yyyy-MM-ddTHH:mm:ss}", new { @class = "form-control", @type = "text" } )
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Cantidad)
+                            </td>
+                            <td>
+                                <button value="@item.ProductoTalleId" onclick="EliminarFecha(@item.ProductoTalleId)">Eliminar</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        function AgregarFecha() {
+            //e.preventDefault;
+            var fecha = document.getElementById('FechaNueva').value;
+            var idCita = document.getElementById('ProductoId').value;
+            console.log(fecha);
+            debugger;
+            var data = JSON.stringify({
+                id: idCita,
+                fecha: fecha
+            });
+            var url = "/Citas/AddDate";
+            $.post(url, { id: idCita, fecha: fecha }, function (data) {
+                
+            })
+                .done(function () {
+                    location.reload();
+                })
+                .fail(function () {
+                    alert("error");
+                })
+                .always(function () {
+                    
+                });
+            
+        }
+        function EliminarFecha(id) {
+            var data = JSON.stringify({
+                id: id
+            });
+            var url = "/Citas/DeleteDate";
+            $.post(url, { id: id}, function (data) {
+            })
+                .done(function () {
+                    location.reload();
+                })
+                .fail(function () {
+                    alert("error");
+                })
+                .always(function () {
+                });
+        }
+    </script>
+    }

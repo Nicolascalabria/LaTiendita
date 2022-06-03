@@ -7,104 +7,93 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LaTiendita.Models;
 using LaTiendita.Stock;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace LaTiendita.Controllers
 {
-    [Authorize(Roles = "ADMIN")]
-    public class UsuariosController : Controller
+    public class ProductoBisController : Controller
     {
         private readonly BaseDeDatos _context;
 
-        public UsuariosController(BaseDeDatos context)
+        public ProductoBisController(BaseDeDatos context)
         {
             _context = context;
         }
 
-        // GET: Usuarios
+        // GET: ProductoBis
         public async Task<IActionResult> Index()
         {
-            String usuarioEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var baseDeDatos = _context.Usuarios
-                .Where(p => p.Email.Equals(usuarioEmail));
+            var baseDeDatos = _context.ProductoBis.Include(p => p.Categoria);
             return View(await baseDeDatos.ToListAsync());
         }
 
-        // GET: Usuarios/Details/5
+        // GET: ProductoBis/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Usuarios == null)
+            if (id == null || _context.ProductoBis == null)
             {
                 return NotFound();
             }
 
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(m => m.UsuarioId == id);
-            if (usuario == null)
+            var productoBis = await _context.ProductoBis
+                .Include(p => p.Categoria)
+                .FirstOrDefaultAsync(m => m.ProductoId == id);
+            if (productoBis == null)
             {
                 return NotFound();
             }
 
-            return View(usuario);
+            return View(productoBis);
         }
 
-        // GET: Usuarios/Create
+        // GET: ProductoBis/Create
         public IActionResult Create()
         {
+            ViewData["CategoriaId"] = new SelectList(_context.Categorias, "CategoriaId", "Nombre");
             return View();
         }
 
-        [AllowAnonymous]
-        public async Task<IActionResult> NoAutorizado()
-        {
-            return  View();
-        }
-
-        public IActionResult Registrarse()
-        {
-            return View("Create");
-        }
-        // POST: Usuarios/Create
+        // POST: ProductoBis/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsuarioId,Email,Nombre")] Usuario usuario)
+        public async Task<IActionResult> Create([Bind("ProductoId,Nombre,Precio,Detalle,CategoriaId")] ProductoBis productoBis)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(usuario);
+                _context.Add(productoBis);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(usuario);
+            ViewData["CategoriaId"] = new SelectList(_context.Categorias, "CategoriaId", "Nombre", productoBis.CategoriaId);
+            return View(productoBis);
         }
 
-        // GET: Usuarios/Edit/5
+        // GET: ProductoBis/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Usuarios == null)
+            if (id == null || _context.ProductoBis == null)
             {
                 return NotFound();
             }
 
-            var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario == null)
+            var productoBis = await _context.ProductoBis.FindAsync(id);
+            if (productoBis == null)
             {
                 return NotFound();
             }
-            return View(usuario);
+            ViewData["CategoriaId"] = new SelectList(_context.Categorias, "CategoriaId", "Nombre", productoBis.CategoriaId);
+            return View(productoBis);
         }
 
-        // POST: Usuarios/Edit/5
+        // POST: ProductoBis/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UsuarioId,Email,Nombre")] Usuario usuario)
+        public async Task<IActionResult> Edit(int id, [Bind("ProductoId,Nombre,Precio,Detalle,CategoriaId")] ProductoBis productoBis)
         {
-            if (id != usuario.UsuarioId)
+            if (id != productoBis.ProductoId)
             {
                 return NotFound();
             }
@@ -113,12 +102,12 @@ namespace LaTiendita.Controllers
             {
                 try
                 {
-                    _context.Update(usuario);
+                    _context.Update(productoBis);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UsuarioExists(usuario.UsuarioId))
+                    if (!ProductoBisExists(productoBis.ProductoId))
                     {
                         return NotFound();
                     }
@@ -129,49 +118,51 @@ namespace LaTiendita.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(usuario);
+            ViewData["CategoriaId"] = new SelectList(_context.Categorias, "CategoriaId", "Nombre", productoBis.CategoriaId);
+            return View(productoBis);
         }
 
-        // GET: Usuarios/Delete/5
+        // GET: ProductoBis/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Usuarios == null)
+            if (id == null || _context.ProductoBis == null)
             {
                 return NotFound();
             }
 
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(m => m.UsuarioId == id);
-            if (usuario == null)
+            var productoBis = await _context.ProductoBis
+                .Include(p => p.Categoria)
+                .FirstOrDefaultAsync(m => m.ProductoId == id);
+            if (productoBis == null)
             {
                 return NotFound();
             }
 
-            return View(usuario);
+            return View(productoBis);
         }
 
-        // POST: Usuarios/Delete/5
+        // POST: ProductoBis/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Usuarios == null)
+            if (_context.ProductoBis == null)
             {
-                return Problem("Entity set 'BaseDeDatos.Usuarios'  is null.");
+                return Problem("Entity set 'BaseDeDatos.ProductoBis'  is null.");
             }
-            var usuario = await _context.Usuarios.FindAsync(id);
-            if (usuario != null)
+            var productoBis = await _context.ProductoBis.FindAsync(id);
+            if (productoBis != null)
             {
-                _context.Usuarios.Remove(usuario);
+                _context.ProductoBis.Remove(productoBis);
             }
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool UsuarioExists(int id)
+        private bool ProductoBisExists(int id)
         {
-          return _context.Usuarios.Any(e => e.UsuarioId == id);
+          return _context.ProductoBis.Any(e => e.ProductoId == id);
         }
     }
 }
