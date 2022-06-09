@@ -37,13 +37,22 @@
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
-             <label>Nuevo Horario : </label>
+             <label>Ingresar talles : </label>
             <input class="form-control" 
                    type="text" 
                    data-val="true"
                    data-val-required="The Fecha de Creacion de la Cita field is required." 
-                   id="FechaNueva" 
-                   name="FechaNueva" 
+                   id="nombre" 
+                   name="nombre" 
+                   style="display:inline"
+                   aria-describedby="FechaNueva-error" aria-invalid="false">
+                    <label>Ingresar cantidad : </label>
+            <input class="form-control" 
+                   type="number" 
+                   data-val="true"
+                   data-val-required="The Fecha de Creacion de la Cita field is required." 
+                   id="cantidad" 
+                   name="cantidad"
                    style="display:inline"
                    aria-describedby="FechaNueva-error" aria-invalid="false">
             <button onclick="AgregarFecha()" type="button">Agregar</button>
@@ -51,27 +60,25 @@
                 <thead>
                     <tr>
                         <th>
-                            Fecha
+                            Talles
                         </th>
                         <th>
-                            Id
+                            Cantidad
                         </th>
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
+                 <tbody>
                     @foreach (var item in Model.ProductoTalle)
                     {
                         <tr>
                             <td>
-                                @Html.TextBoxFor(modelItem => item.Talle, "{0:yyyy-MM-ddTHH:mm:ss}", new { @class = "form-control", @type = "text" } )
+                                @Html.DisplayFor(modelItem => item.Talle.Nombre)
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.Cantidad)
                             </td>
-                            <td>
-                                <button value="@item.ProductoTalleId" onclick="EliminarFecha(@item.ProductoTalleId)">Eliminar</button>
-                            </td>
+                            
                         </tr>
                     }
                 </tbody>
@@ -89,16 +96,20 @@
     <script>
         function AgregarFecha() {
             //e.preventDefault;
-            var fecha = document.getElementById('FechaNueva').value;
-            var idCita = document.getElementById('ProductoId').value;
-            console.log(fecha);
+            var nombre = document.getElementById('nombre').value;
+            var ProductoId = document.getElementById('ProductoId').value;
+            var cantidad = document.getElementById('cantidad').value;
+            console.log(nombre);
+            console.log(ProductoId);
+            console.log(cantidad);
             debugger;
             var data = JSON.stringify({
-                id: idCita,
-                fecha: fecha
+                id: ProductoId,
+                nombre: nombre,
+                cantidad:cantidad
             });
-            var url = "/Citas/AddDate";
-            $.post(url, { id: idCita, fecha: fecha }, function (data) {
+            var url = "/ProductoBis/AddTalle";
+            $.post(url, { id: ProductoId, nombre: nombre, cantidad: cantidad }, function (data) {
                 
             })
                 .done(function () {
@@ -112,7 +123,7 @@
                 });
             
         }
-        function EliminarFecha(id) {
+        function EliminarTalle(id){
             var data = JSON.stringify({
                 id: id
             });

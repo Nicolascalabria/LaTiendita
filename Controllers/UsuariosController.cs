@@ -56,9 +56,9 @@ namespace LaTiendita.Controllers
         }
 
         [AllowAnonymous]
-        public async Task<IActionResult> NoAutorizado()
+        public IActionResult NoAutorizado()
         {
-            return  View();
+            return View();
         }
 
         public IActionResult Registrarse()

@@ -9,12 +9,11 @@ namespace LaTiendita.Models
 
         
         public int TalleId { get; set; }
-
-        public Talle Talle{ get; set; }
+        public Talle Talle { get; set; }
 
         public int ProductoId{ get; set; }
 
-        public ProductoBis producto   { get; set; }
+        public ProductoBis Producto   { get; set; }
 
 
         public int Cantidad { get; set; }

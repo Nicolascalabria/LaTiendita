@@ -22,7 +22,7 @@ namespace LaTiendita.Controllers
         // GET: ProductoTalles
         public async Task<IActionResult> Index()
         {
-            var baseDeDatos = _context.ProductoTalle.Include(p => p.Talle).Include(p => p.producto);
+            var baseDeDatos = _context.ProductoTalle.Include(p => p.Producto).Include(p => p.Talle);
             return View(await baseDeDatos.ToListAsync());
         }
 
@@ -35,8 +35,8 @@ namespace LaTiendita.Controllers
             }
 
             var productoTalle = await _context.ProductoTalle
+                .Include(p => p.Producto)
                 .Include(p => p.Talle)
-                .Include(p => p.producto)
                 .FirstOrDefaultAsync(m => m.ProductoTalleId == id);
             if (productoTalle == null)
             {
@@ -49,8 +49,8 @@ namespace LaTiendita.Controllers
         // GET: ProductoTalles/Create
         public IActionResult Create()
         {
+            ViewData["ProductoId"] = new SelectList(_context.ProductoBis, "ProductoId", "ProductoId");
             ViewData["TalleId"] = new SelectList(_context.Talles, "TalleId", "TalleId");
-            ViewData["ProductoId"] = new SelectList(_context.Set<ProductoBis>(), "ProductoId", "ProductoId");
             return View();
         }
 
@@ -67,8 +67,8 @@ namespace LaTiendita.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["ProductoId"] = new SelectList(_context.ProductoBis, "ProductoId", "ProductoId", productoTalle.ProductoId);
             ViewData["TalleId"] = new SelectList(_context.Talles, "TalleId", "TalleId", productoTalle.TalleId);
-            ViewData["ProductoId"] = new SelectList(_context.Set<ProductoBis>(), "ProductoId", "ProductoId", productoTalle.ProductoId);
             return View(productoTalle);
         }
 
@@ -85,8 +85,8 @@ namespace LaTiendita.Controllers
             {
                 return NotFound();
             }
-            ViewData["TalleId"] = new SelectList(_context.Talles, "TalleId", "TalleId", productoTalle.TalleId);
-            ViewData["ProductoId"] = new SelectList(_context.Set<ProductoBis>(), "ProductoId", "ProductoId", productoTalle.ProductoId);
+            ViewData["ProductoId"] = new SelectList(_context.ProductoBis, "ProductoId", "ProductoId", productoTalle.ProductoId);
+            
             return View(productoTalle);
         }
 
@@ -122,8 +122,8 @@ namespace LaTiendita.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["ProductoId"] = new SelectList(_context.ProductoBis, "ProductoId", "ProductoId", productoTalle.ProductoId);
             ViewData["TalleId"] = new SelectList(_context.Talles, "TalleId", "TalleId", productoTalle.TalleId);
-            ViewData["ProductoId"] = new SelectList(_context.Set<ProductoBis>(), "ProductoId", "ProductoId", productoTalle.ProductoId);
             return View(productoTalle);
         }
 
@@ -136,8 +136,8 @@ namespace LaTiendita.Controllers
             }
 
             var productoTalle = await _context.ProductoTalle
+                .Include(p => p.Producto)
                 .Include(p => p.Talle)
-                .Include(p => p.producto)
                 .FirstOrDefaultAsync(m => m.ProductoTalleId == id);
             if (productoTalle == null)
             {

@@ -119,6 +119,7 @@ namespace LaTiendita.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "CategoriaId", "Nombre", productoBis.CategoriaId);
+            ViewData["TalleId"] = new SelectList(_context.ProductoTalle, "TalleId", "TalleId", productoBis.ProductoTalle);
             return View(productoBis);
         }
 
@@ -164,5 +165,148 @@ namespace LaTiendita.Controllers
         {
           return _context.ProductoBis.Any(e => e.ProductoId == id);
         }
+
+        private bool talleExist(String nombre)
+        {
+            return _context.ProductoBis.Any(e => e.Nombre == nombre);
+        }
+
+        private Talle crearTalle(String nombre)
+        {
+            Talle talleProducto = null;
+
+            if (ValidarTalle(nombre))
+            {
+                 talleProducto = _context
+                            .Talles
+                            .Where(o => o.Nombre.ToUpper().Equals(nombre.ToUpper())).FirstOrDefault();
+
+                if (talleProducto == null)
+                {
+                    _context.Talles.Add(new Talle()
+                    {
+                        Nombre = nombre,
+
+                    });
+                    _context.SaveChanges();
+
+                    
+                }
+            }
+
+            return talleProducto;
+
+        }
+
+
+        private bool ValidarTalle (String nombre)
+        {
+
+            bool talleValido = nombre.ToUpper().Equals("S") ||
+                               nombre.ToUpper().Equals("M") ||
+                               nombre.ToUpper().Equals("L") ||
+                               nombre.ToUpper().Equals("XL");
+
+
+            if (!talleValido)
+            {
+                throw new Exception("El talle ingresado no es valido");
+            }
+
+            return talleValido;
+        }
+
+
+
+
+
+
+        [HttpPost, ActionName("AddTalle")]
+        public IActionResult AddTalle(int id, String nombre, int cantidad)
+        {
+            if (id > 0)
+            {
+                try
+                {
+
+                    var talleProducto = _context
+                        .Talles
+                        .Where(o => o.Nombre.ToUpper().Equals(nombre.ToUpper())).FirstOrDefault();
+
+
+                    if(talleProducto == null)
+                    {
+                        talleProducto =crearTalle(nombre);
+                        _context.ProductoTalle.Add(new ProductoTalle()
+                        {
+                            ProductoId = id,
+                            Cantidad = cantidad,
+                            TalleId = talleProducto.TalleId,
+
+                        });
+                        _context.SaveChanges();
+
+                    }
+                    else
+                    {
+
+                        var productoTalle = _context
+                        .ProductoTalle
+                        .Where(o => o.ProductoId == id).FirstOrDefault();
+
+                        if (productoTalle != null)
+                        {
+                            productoTalle.Cantidad += cantidad;
+                            _context.SaveChanges();
+
+                        }
+                        else
+                        {
+                            _context.ProductoTalle.Add(new ProductoTalle()
+                            {
+                                ProductoId = id,
+                                Cantidad = cantidad,
+                                TalleId = talleProducto.TalleId,
+
+                            });
+                            _context.SaveChanges();
+
+                        }
+
+
+
+
+
+                    }
+                    
+
+                  
+
+                      
+
+
+                      
+                    
+                
+                    
+                        
+                        return Ok();
+
+
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+
+            }
+            else
+            {
+                throw new Exception("El Id de cita esta mal...");
+            }
+            //return Json(new { success = false, responseText = "The attached file is not supported." });
+            //return Ok();
+        }
     }
 }
+    
