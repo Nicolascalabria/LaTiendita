@@ -1,17 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LaTiendita.Models.Enums;
 
 namespace LaTiendita.Models
 {
     public class Usuario
     {
-
-        [Key]
-        public int UsuarioId { get; set; }
-
-        public String Email { get; set; }
-
-        public String Nombre { get; set; }
-
-
+       
+        public int Id { get; set; }
+        public string Email { get; set; }
+        public string Nombre { get; set; }
+        public DateTime FechaDeCreacion { get; set; } = DateTime.Now;
+        public Roles Rol { get; set; }
     }
 }

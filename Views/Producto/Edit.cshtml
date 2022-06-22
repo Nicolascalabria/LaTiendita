@@ -1,4 +1,4 @@
-﻿@model LaTiendita.Models.ProductoBis
+﻿@model LaTiendita.Models.Producto
 
 @{
     ViewData["Title"] = "Edit";
@@ -7,13 +7,13 @@
 
 <h1>Edit</h1>
 
-<h4>ProductoBis</h4>
+<h4>Producto</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ProductoId" />
+            <input id="Id" type="hidden" asp-for="Id" />
             <div class="form-group">
                 <label asp-for="Nombre" class="control-label"></label>
                 <input asp-for="Nombre" class="form-control" />
@@ -31,36 +31,29 @@
             </div>
             <div class="form-group">
                 <label asp-for="CategoriaId" class="control-label"></label>
-                <select asp-for="CategoriaId" class="form-control" asp-items="ViewBag.CategoriaId"></select>
+                <select asp-for="CategoriaId" class="form-control" asp-items="@ViewBag.CategoriaId"></select>
                 <span asp-validation-for="CategoriaId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <label>Talles: </label>
+                <select id="talleId" class="form-select" asp-items="@ViewBag.Talles"></select>
             </div>
-             <label>Ingresar talles : </label>
-            <input class="form-control" 
-                   type="text" 
-                   data-val="true"
-                   data-val-required="The Fecha de Creacion de la Cita field is required." 
-                   id="nombre" 
-                   name="nombre" 
-                   style="display:inline"
-                   aria-describedby="FechaNueva-error" aria-invalid="false">
-                    <label>Ingresar cantidad : </label>
-            <input class="form-control" 
-                   type="number" 
-                   data-val="true"
-                   data-val-required="The Fecha de Creacion de la Cita field is required." 
+            
+
+
+            <label>Ingresar cantidad : </label>
+            <input class="form-control" type="number" 
                    id="cantidad" 
                    name="cantidad"
                    style="display:inline"
                    aria-describedby="FechaNueva-error" aria-invalid="false">
-            <button onclick="AgregarFecha()" type="button">Agregar</button>
+            <button onclick="CrearProductoTalle()" class="btn btn-outline-primary" type="button">Agregar</button>
+            
             <table class="table">
                 <thead>
                     <tr>
                         <th>
-                            Talles
+                            Talle
                         </th>
                         <th>
                             Cantidad
@@ -69,7 +62,7 @@
                     </tr>
                 </thead>
                  <tbody>
-                    @foreach (var item in Model.ProductoTalle)
+                    @foreach (var item in Model.Talles)
                     {
                         <tr>
                             <td>
@@ -78,11 +71,13 @@
                             <td>
                                 @Html.DisplayFor(modelItem => item.Cantidad)
                             </td>
-                            
                         </tr>
                     }
                 </tbody>
             </table>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
         </form>
     </div>
 </div>
@@ -94,24 +89,18 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
-        function AgregarFecha() {
-            //e.preventDefault;
-            var nombre = document.getElementById('nombre').value;
-            var ProductoId = document.getElementById('ProductoId').value;
+        function CrearProductoTalle() {
+            var talleId = document.getElementById('talleId').value;
+            var productoId = document.getElementById('Id').value;
             var cantidad = document.getElementById('cantidad').value;
-            console.log(nombre);
-            console.log(ProductoId);
-            console.log(cantidad);
-            debugger;
-            var data = JSON.stringify({
-                id: ProductoId,
-                nombre: nombre,
-                cantidad:cantidad
-            });
-            var url = "/ProductoBis/AddTalle";
-            $.post(url, { id: ProductoId, nombre: nombre, cantidad: cantidad }, function (data) {
-                
-            })
+            
+            var request = { 
+                productoId: productoId, 
+                talleId: talleId, 
+                cantidad: cantidad 
+            }
+
+            $.post("/Producto/AddTalle", request,function (data) {})
                 .done(function () {
                     location.reload();
                 })
@@ -122,22 +111,6 @@
                     
                 });
             
-        }
-        function EliminarTalle(id){
-            var data = JSON.stringify({
-                id: id
-            });
-            var url = "/Citas/DeleteDate";
-            $.post(url, { id: id}, function (data) {
-            })
-                .done(function () {
-                    location.reload();
-                })
-                .fail(function () {
-                    alert("error");
-                })
-                .always(function () {
-                });
         }
     </script>
     }

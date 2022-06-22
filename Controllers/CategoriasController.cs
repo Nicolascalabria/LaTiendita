@@ -1,10 +1,5 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LaTiendita.Models;
 using LaTiendita.Stock;
@@ -12,8 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LaTiendita.Controllers
 {
-    [Authorize(Roles = "ADMIN")]
-
+    [Authorize(Roles = "Administrador")]
     public class CategoriasController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -23,13 +17,11 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
-        // GET: Categorias
         public async Task<IActionResult> Index()
         {
             return View(await _context.Categorias.ToListAsync());
         }
 
-        // GET: Categorias/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -38,7 +30,8 @@ namespace LaTiendita.Controllers
             }
 
             var categoria = await _context.Categorias
-                .FirstOrDefaultAsync(m => m.CategoriaId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (categoria == null)
             {
                 return NotFound();
@@ -47,15 +40,11 @@ namespace LaTiendita.Controllers
             return View(categoria);
         }
 
-        // GET: Categorias/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Categorias/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("CategoriaId,Nombre")] Categoria categoria)
@@ -69,7 +58,6 @@ namespace LaTiendita.Controllers
             return View(categoria);
         }
 
-        // GET: Categorias/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -85,14 +73,11 @@ namespace LaTiendita.Controllers
             return View(categoria);
         }
 
-        // POST: Categorias/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("CategoriaId,Nombre")] Categoria categoria)
+        public async Task<IActionResult> Edit(int id, [Bind("Id, CategoriaId, Nombre")] Categoria categoria)
         {
-            if (id != categoria.CategoriaId)
+            if (id != categoria.Id)
             {
                 return NotFound();
             }
@@ -106,7 +91,7 @@ namespace LaTiendita.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoriaExists(categoria.CategoriaId))
+                    if (!CategoriaExists(categoria.Id))
                     {
                         return NotFound();
                     }
@@ -129,7 +114,7 @@ namespace LaTiendita.Controllers
             }
 
             var categoria = await _context.Categorias
-                .FirstOrDefaultAsync(m => m.CategoriaId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (categoria == null)
             {
                 return NotFound();
@@ -151,7 +136,7 @@ namespace LaTiendita.Controllers
 
         private bool CategoriaExists(int id)
         {
-            return _context.Categorias.Any(e => e.CategoriaId == id);
+            return _context.Categorias.Any(e => e.Id == id);
         }
     }
 }

@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using LaTiendita.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
+
 using LaTiendita.Stock;
+using LaTiendita.Models;
 
 namespace LaTiendita.Controllers
 {
+    [Authorize(Roles = "Usuario")]
     public class CatalogoController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -19,24 +18,28 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
-        // GET: Catalogo
         public async Task<IActionResult> Index()
         {
-            var baseDeDatos = _context.ProductoBis.Include(p => p.Categoria);
-            return View(await baseDeDatos.ToListAsync());
+            var productos = await _context.Producto
+                .Include(x => x.Talles)
+                .Include(p => p.Categoria)
+                .ToListAsync();
+
+            ViewData["Talles"] = new SelectList(_context.Talles, "Id", "Nombre");
+            return View(productos);
         }
 
-        // GET: Catalogo/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.ProductoBis == null)
+            if (id == null || _context.Producto == null)
             {
                 return NotFound();
             }
 
-            var producto = await _context.ProductoBis
+            var producto = await _context.Producto
                 .Include(p => p.Categoria)
-                .FirstOrDefaultAsync(m => m.ProductoId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (producto == null)
             {
                 return NotFound();
@@ -45,19 +48,15 @@ namespace LaTiendita.Controllers
             return View(producto);
         }
 
-        // GET: Catalogo/Create
         public IActionResult Create()
         {
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "CategoriaId", "CategoriaId");
             return View();
         }
 
-        // POST: Catalogo/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductoId,Nombre,Precio,Detalle,CategoriaId")] ProductoBis producto)
+        public async Task<IActionResult> Create([Bind("ProductoId,Nombre,Precio,Detalle,CategoriaId")] Producto producto)
         {
             if (ModelState.IsValid)
             {
@@ -69,15 +68,14 @@ namespace LaTiendita.Controllers
             return View(producto);
         }
 
-        // GET: Catalogo/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.ProductoBis == null)
+            if (id == null || _context.Producto == null)
             {
                 return NotFound();
             }
 
-            var producto = await _context.ProductoBis.FindAsync(id);
+            var producto = await _context.Producto.FindAsync(id);
             if (producto == null)
             {
                 return NotFound();
@@ -86,14 +84,11 @@ namespace LaTiendita.Controllers
             return View(producto);
         }
 
-        // POST: Catalogo/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ProductoId,Nombre,Precio,Detalle,CategoriaId")] ProductoBis producto)
+        public async Task<IActionResult> Edit(int id, [Bind("ProductoId,Nombre,Precio,Detalle,CategoriaId")] Producto producto)
         {
-            if (id != producto.ProductoId)
+            if (id != producto.Id)
             {
                 return NotFound();
             }
@@ -107,7 +102,7 @@ namespace LaTiendita.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductoExists(producto.ProductoId))
+                    if (!ProductoExists(producto.Id))
                     {
                         return NotFound();
                     }
@@ -125,14 +120,14 @@ namespace LaTiendita.Controllers
         // GET: Catalogo/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.ProductoBis == null)
+            if (id == null || _context.Producto == null)
             {
                 return NotFound();
             }
 
-            var producto = await _context.ProductoBis
+            var producto = await _context.Producto
                 .Include(p => p.Categoria)
-                .FirstOrDefaultAsync(m => m.ProductoId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (producto == null)
             {
                 return NotFound();
@@ -146,14 +141,14 @@ namespace LaTiendita.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.ProductoBis == null)
+            if (_context.Producto == null)
             {
                 return Problem("Entity set 'BaseDeDatos.Productos'  is null.");
             }
-            var producto = await _context.ProductoBis.FindAsync(id);
+            var producto = await _context.Producto.FindAsync(id);
             if (producto != null)
             {
-                _context.ProductoBis.Remove(producto);
+                _context.Producto.Remove(producto);
             }
             
             await _context.SaveChangesAsync();
@@ -162,7 +157,7 @@ namespace LaTiendita.Controllers
 
         private bool ProductoExists(int id)
         {
-          return _context.ProductoBis.Any(e => e.ProductoId == id);
+          return _context.Producto.Any(e => e.Id == id);
         }
     }
 }

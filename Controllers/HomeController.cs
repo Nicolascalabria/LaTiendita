@@ -1,8 +1,10 @@
 ﻿using LaTiendita.Models;
+using LaTiendita.Models.Enums;
 using LaTiendita.Stock;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -17,8 +19,6 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
-  
-
         [HttpGet]
         public IActionResult Index()
         {
@@ -26,66 +26,64 @@ namespace LaTiendita.Controllers
 
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Index(string email)
+        {
+            var usuario = await _context.Usuarios
+               .FirstOrDefaultAsync(o => o.Email.ToUpper().Equals(email.ToUpper()));
 
-       
+            if (usuario is null)
+                return RedirectToAction("CrearUsuarioNoAdmin", "Usuarios");
 
+            Loguearse(usuario);
 
+            return usuario.Rol switch
+            {
+                Roles.Administrador => RedirectToAction("Index", "Producto"),
+                _ => RedirectToAction("Index", "Catalogo"),
+            };
+        }
+
+        public async Task<IActionResult> LimpiarCarrito()
+        {
+            var cookieUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var carritoDb = await _context.Carritos
+                .FirstOrDefaultAsync(x => x.UsuarioId == cookieUserId);
+
+            if (carritoDb != null)
+            {
+                _context.Carritos.Remove(carritoDb);
+                var productos = _context.CarritoProducto
+                        .ToList();
+                _context.CarritoProducto
+                .RemoveRange(productos);
+                await _context.SaveChangesAsync();
+            }
+            return Ok();
+        }
 
         [HttpPost]
-        public IActionResult Index(string email)
+        public async Task<IActionResult> Logout()
         {
-            var usuario = _context
-               .Usuarios
-               .Where(o => o.Email.ToUpper().Equals(email.ToUpper()))
-                .FirstOrDefault();
 
-            if (email == "gabrielarce@gmail.com")
-            {
-                ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+            await LimpiarCarrito();
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
 
-                //Lo q obtengo al acceder a User.Identity.Name
-                identity.AddClaim(new Claim(ClaimTypes.Name, usuario.Nombre));
-                //Se Usara para autorizacion por roles
-                identity.AddClaim(new Claim(ClaimTypes.Role, "ADMIN"));
-                //Se usa para acceder al ID del usuario en sistema
-                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, usuario.Email.ToString()));
-                //Lo usamos cuando queremos mostrar el nombre del Usuario logueado en sistema
-                identity.AddClaim(new Claim(ClaimTypes.GivenName, usuario.Nombre));
-                ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-                //En este apso se hace el login del usuario al sistema
-                HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal).Wait();
+        private void Loguearse(Usuario usuario)
+        {
+            ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
 
-                return RedirectToAction("Index", "ProductoBis");
-            }
-            else
-            {
+            identity.AddClaim(new Claim(ClaimTypes.Name, usuario.Nombre));
+            identity.AddClaim(new Claim(ClaimTypes.Role, usuario.Rol.ToString()));
+            identity.AddClaim(new Claim(ClaimTypes.Email, usuario.Email));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()));
+            identity.AddClaim(new Claim(ClaimTypes.GivenName, usuario.Nombre));
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
 
-                //Quiero saber si en la base existe, sino tengo que crearlo
-                bool usuarioExiste = usuario != null;
-
-                if (usuarioExiste)
-                {
-                    ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-
-                    //Lo q obtengo al acceder a User.Identity.Name
-                    identity.AddClaim(new Claim(ClaimTypes.Name, usuario.Nombre));
-                    //Se Usara para autorizacion por roles
-                    identity.AddClaim(new Claim(ClaimTypes.Role, "USUARIO"));
-                    //Se usa para acceder al ID del usuario en sistema
-                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, usuario.UsuarioId.ToString()));
-                    //Lo usamos cuando queremos mostrar el nombre del Usuario logueado en sistema
-                    identity.AddClaim(new Claim(ClaimTypes.GivenName, usuario.Nombre));
-                    ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-                    //En este apso se hace el login del usuario al sistema
-                    HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal).Wait();
-                    return RedirectToAction("Index", "Catalogo");
-                }
-                else
-                {
-                    return RedirectToAction("Create", "Usuarios");
-                }
-
-            }
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         }
 
         public IActionResult Privacy()

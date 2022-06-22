@@ -1,10 +1,6 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LaTiendita.Models;
 using LaTiendita.Stock;
@@ -12,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LaTiendita.Controllers
 {
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "Administrador")]
     public class TallesController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -22,13 +18,11 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
-        // GET: Talles
         public async Task<IActionResult> Index()
         {
             return View(await _context.Talles.ToListAsync());
         }
 
-        // GET: Talles/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -37,7 +31,7 @@ namespace LaTiendita.Controllers
             }
 
             var talle = await _context.Talles
-                .FirstOrDefaultAsync(m => m.TalleId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (talle == null)
             {
                 return NotFound();
@@ -46,15 +40,11 @@ namespace LaTiendita.Controllers
             return View(talle);
         }
 
-        // GET: Talles/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Talles/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("TalleId,Nombre")] Talle talle)
@@ -68,7 +58,6 @@ namespace LaTiendita.Controllers
             return View(talle);
         }
 
-        // GET: Talles/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -84,14 +73,11 @@ namespace LaTiendita.Controllers
             return View(talle);
         }
 
-        // POST: Talles/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("TalleId,Nombre")] Talle talle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id, TalleId, Nombre")] Talle talle)
         {
-            if (id != talle.TalleId)
+            if (id != talle.Id)
             {
                 return NotFound();
             }
@@ -105,7 +91,7 @@ namespace LaTiendita.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TalleExists(talle.TalleId))
+                    if (!TalleExists(talle.Id))
                     {
                         return NotFound();
                     }
@@ -119,7 +105,6 @@ namespace LaTiendita.Controllers
             return View(talle);
         }
 
-        // GET: Talles/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -128,7 +113,7 @@ namespace LaTiendita.Controllers
             }
 
             var talle = await _context.Talles
-                .FirstOrDefaultAsync(m => m.TalleId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (talle == null)
             {
                 return NotFound();
@@ -137,7 +122,6 @@ namespace LaTiendita.Controllers
             return View(talle);
         }
 
-        // POST: Talles/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -150,7 +134,7 @@ namespace LaTiendita.Controllers
 
         private bool TalleExists(int id)
         {
-            return _context.Talles.Any(e => e.TalleId == id);
+            return _context.Talles.Any(e => e.Id == id);
         }
     }
 }

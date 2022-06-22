@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LaTiendita.Models;
 using LaTiendita.Stock;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using LaTiendita.Models.Enums;
 
 namespace LaTiendita.Controllers
 {
-    
+    [Authorize(Roles = "Administrador")]
     public class UsuariosController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -22,14 +18,11 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
-        // GET: Usuarios
-        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Usuarios.ToListAsync());
         }
 
-        // GET: Usuarios/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Usuarios == null)
@@ -38,7 +31,7 @@ namespace LaTiendita.Controllers
             }
 
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(m => m.UsuarioId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (usuario == null)
             {
                 return NotFound();
@@ -47,9 +40,16 @@ namespace LaTiendita.Controllers
             return View(usuario);
         }
 
-        // GET: Usuarios/Create
         public IActionResult Create()
         {
+            ViewData["Roles"] = new SelectList(Enum.GetValues(typeof(Roles)));
+            return View();
+        }
+
+        [AllowAnonymous]
+        public IActionResult CrearUsuarioNoAdmin()
+        {
+            ViewData["Roles"] = new SelectList(Enum.GetValues(typeof(Roles)));
             return View();
         }
 
@@ -63,12 +63,10 @@ namespace LaTiendita.Controllers
         {
             return View("Create");
         }
-        // POST: Usuarios/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsuarioId,Email,Nombre")] Usuario usuario)
+        public async Task<IActionResult> Create([Bind("Id, Email, Nombre, Rol")] Usuario usuario)
         {
             if (ModelState.IsValid)
             {
@@ -79,7 +77,6 @@ namespace LaTiendita.Controllers
             return RedirectToAction("Create", "Usuario");
         }
 
-        // GET: Usuarios/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Usuarios == null)
@@ -92,17 +89,16 @@ namespace LaTiendita.Controllers
             {
                 return NotFound();
             }
+
+            ViewData["Roles"] = new SelectList(Enum.GetValues(typeof(Roles)));
             return View(usuario);
         }
 
-        // POST: Usuarios/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UsuarioId,Email,Nombre")] Usuario usuario)
+        public async Task<IActionResult> Edit(int id, [Bind("Id, Email, Nombre, Rol")] Usuario usuario)
         {
-            if (id != usuario.UsuarioId)
+            if (id != usuario.Id)
             {
                 return NotFound();
             }
@@ -116,7 +112,7 @@ namespace LaTiendita.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UsuarioExists(usuario.UsuarioId))
+                    if (!UsuarioExists(usuario.Id))
                     {
                         return NotFound();
                     }
@@ -130,7 +126,6 @@ namespace LaTiendita.Controllers
             return View(usuario);
         }
 
-        // GET: Usuarios/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Usuarios == null)
@@ -139,7 +134,7 @@ namespace LaTiendita.Controllers
             }
 
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(m => m.UsuarioId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (usuario == null)
             {
                 return NotFound();
@@ -148,7 +143,6 @@ namespace LaTiendita.Controllers
             return View(usuario);
         }
 
-        // POST: Usuarios/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -169,7 +163,7 @@ namespace LaTiendita.Controllers
 
         private bool UsuarioExists(int id)
         {
-          return _context.Usuarios.Any(e => e.UsuarioId == id);
+          return _context.Usuarios.Any(e => e.Id == id);
         }
     }
 }
