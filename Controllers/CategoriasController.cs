@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LaTiendita.Controllers
 {
-    [Authorize(Roles = "Administrador")]
+    
     public class CategoriasController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -17,6 +17,7 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Categorias.ToListAsync());

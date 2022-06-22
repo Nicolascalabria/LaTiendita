@@ -4,11 +4,13 @@ using LaTiendita.Models;
 using LaTiendita.Stock;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using LaTiendita.Models.Enums;
+
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace LaTiendita.Controllers
 {
-    [Authorize(Roles = "Administrador")]
     public class UsuariosController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -18,6 +20,7 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Usuarios.ToListAsync());
@@ -42,16 +45,9 @@ namespace LaTiendita.Controllers
 
         public IActionResult Create()
         {
-            ViewData["Roles"] = new SelectList(Enum.GetValues(typeof(Roles)));
             return View();
         }
 
-        [AllowAnonymous]
-        public IActionResult CrearUsuarioNoAdmin()
-        {
-            ViewData["Roles"] = new SelectList(Enum.GetValues(typeof(Roles)));
-            return View();
-        }
 
         [AllowAnonymous]
         public IActionResult NoAutorizado()
@@ -61,20 +57,52 @@ namespace LaTiendita.Controllers
 
         public IActionResult Registrarse()
         {
-            return View("Create");
+            return View("Registrarse");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id, Email, Nombre, Rol")] Usuario usuario)
+        public async Task<IActionResult> Create([Bind("Id, Email, Nombre")] Usuario usuario)
         {
+
+
+
             if (ModelState.IsValid)
             {
-                _context.Add(usuario);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Catalogo");
+                var existente = _context
+               .Usuarios
+               .Where(o => o.Email.ToUpper().Equals(usuario.Email.ToUpper()))
+                .FirstOrDefault();
+
+                if (existente == null)
+                {
+                    _context.Add(usuario);
+                    await _context.SaveChangesAsync();
+                    LoguearseUsuario(usuario);
+                    return RedirectToAction("Index", "Catalogo");
+
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Home");
+                }
             }
-            return RedirectToAction("Create", "Usuario");
+            
+            return RedirectToAction("Registrarse", "Usuario");
+        }
+
+        private void LoguearseUsuario(Usuario usuario)
+        {
+            ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            identity.AddClaim(new Claim(ClaimTypes.Name, usuario.Nombre));
+            identity.AddClaim(new Claim(ClaimTypes.Role, "USUARIO"));
+            identity.AddClaim(new Claim(ClaimTypes.Email, usuario.Email));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()));
+            identity.AddClaim(new Claim(ClaimTypes.GivenName, usuario.Nombre));
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -89,8 +117,6 @@ namespace LaTiendita.Controllers
             {
                 return NotFound();
             }
-
-            ViewData["Roles"] = new SelectList(Enum.GetValues(typeof(Roles)));
             return View(usuario);
         }
 
@@ -156,14 +182,14 @@ namespace LaTiendita.Controllers
             {
                 _context.Usuarios.Remove(usuario);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool UsuarioExists(int id)
         {
-          return _context.Usuarios.Any(e => e.Id == id);
+            return _context.Usuarios.Any(e => e.Id == id);
         }
     }
 }

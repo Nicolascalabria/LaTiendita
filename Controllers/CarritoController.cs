@@ -113,12 +113,12 @@ namespace LaTiendita.Controllers
                 .RemoveRange(productos);
                 await _context.SaveChangesAsync();
                 
-                return Ok();
+                return RedirectToAction("Index", "Carrito");
 
             }
+
             
-            //VER ACA QUE EL LIMPIAR CARRITO ME VUELVA A MOSTRAR EL INDEX DE CARRITO 
-            return Ok();    
+            return RedirectToAction("Index", "Carrito");
         }
 
     }

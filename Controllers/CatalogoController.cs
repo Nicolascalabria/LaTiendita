@@ -8,7 +8,7 @@ using LaTiendita.Models;
 
 namespace LaTiendita.Controllers
 {
-    [Authorize(Roles = "Usuario")]
+   
     public class CatalogoController : Controller
     {
         private readonly BaseDeDatos _context;

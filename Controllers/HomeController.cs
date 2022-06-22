@@ -1,5 +1,5 @@
 ﻿using LaTiendita.Models;
-using LaTiendita.Models.Enums;
+
 using LaTiendita.Stock;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -22,27 +22,72 @@ namespace LaTiendita.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return View("Index2");
+            return View();
 
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(string email)
+        public IActionResult Index(string email)
         {
-            var usuario = await _context.Usuarios
-               .FirstOrDefaultAsync(o => o.Email.ToUpper().Equals(email.ToUpper()));
+            var usuario = _context
+               .Usuarios
+               .Where(o => o.Email.ToUpper().Equals(email.ToUpper()))
+                .FirstOrDefault();
 
-            if (usuario is null)
-                return RedirectToAction("CrearUsuarioNoAdmin", "Usuarios");
-
-            Loguearse(usuario);
-
-            return usuario.Rol switch
+            if (email == "nicolasgcalabria@gmail.com")
             {
-                Roles.Administrador => RedirectToAction("Index", "Producto"),
-                _ => RedirectToAction("Index", "Catalogo"),
-            };
+                LoguearseAdmin(usuario);
+                return RedirectToAction("Index", "Producto");
+            }
+            else
+            {
+
+                //Quiero saber si en la base existe, sino tengo que crearlo
+                bool usuarioExiste = usuario != null;
+
+
+     
+                if (usuarioExiste)
+                {
+                    LoguearseUsuario(usuario);
+                    return RedirectToAction("Index", "Catalogo");
+                }
+                else
+                {
+                    return RedirectToAction("Registrarse", "Usuarios");
+                }
+
+            }
         }
+
+        private void LoguearseUsuario(Usuario usuario)
+        {
+            ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            identity.AddClaim(new Claim(ClaimTypes.Name, usuario.Nombre));
+            identity.AddClaim(new Claim(ClaimTypes.Role, "USUARIO"));
+            identity.AddClaim(new Claim(ClaimTypes.Email, usuario.Email));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()));
+            identity.AddClaim(new Claim(ClaimTypes.GivenName, usuario.Nombre));
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        }
+
+        private void LoguearseAdmin(Usuario usuario)
+        {
+            ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            identity.AddClaim(new Claim(ClaimTypes.Name, usuario.Nombre));
+            identity.AddClaim(new Claim(ClaimTypes.Role, "ADMIN"));
+            identity.AddClaim(new Claim(ClaimTypes.Email, usuario.Email));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()));
+            identity.AddClaim(new Claim(ClaimTypes.GivenName, usuario.Nombre));
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        }
+
 
         public async Task<IActionResult> LimpiarCarrito()
         {
@@ -70,20 +115,6 @@ namespace LaTiendita.Controllers
             await LimpiarCarrito();
             await HttpContext.SignOutAsync();
             return RedirectToAction("Index", "Home");
-        }
-
-        private void Loguearse(Usuario usuario)
-        {
-            ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            identity.AddClaim(new Claim(ClaimTypes.Name, usuario.Nombre));
-            identity.AddClaim(new Claim(ClaimTypes.Role, usuario.Rol.ToString()));
-            identity.AddClaim(new Claim(ClaimTypes.Email, usuario.Email));
-            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()));
-            identity.AddClaim(new Claim(ClaimTypes.GivenName, usuario.Nombre));
-            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-
-            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         }
 
         public IActionResult Privacy()

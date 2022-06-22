@@ -1,5 +1,5 @@
 ﻿using LaTiendita.Models;
-using LaTiendita.Models.Enums;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace LaTiendita.Stock
@@ -15,13 +15,9 @@ namespace LaTiendita.Stock
 
         public BaseDeDatos(DbContextOptions opciones) : base(opciones)
         {
+
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Usuario>()
-                .HasData(new Usuario { Id = 1, Email="admin@admin.com", Nombre="Admin", Rol=Roles.Administrador });
-        }
 
         public DbSet<LaTiendita.Models.CarritoProducto> CarritoProducto { get; set; }
     }

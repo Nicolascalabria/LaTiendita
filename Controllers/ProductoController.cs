@@ -8,7 +8,7 @@ using LaTiendita.Stock;
 
 namespace LaTiendita.Controllers
 {
-    [Authorize(Roles = "Administrador")]
+    
     public class ProductoController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -18,6 +18,7 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Index()
         {
             var baseDeDatos = _context.Producto.Include(p => p.Categoria);
