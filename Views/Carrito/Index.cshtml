@@ -1,0 +1,59 @@
+﻿@model IEnumerable<LaTiendita.Models.CarritoProducto>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_LayoutUser.cshtml";
+}
+
+<h1>Carrito</h1>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Producto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Talle)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Cantidad)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Producto.Precio)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Producto.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Talle.Nombre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Cantidad)
+            </td>
+            <td>
+                $ @Html.DisplayFor(modelItem => item.Producto.Precio)
+            </td>
+           
+        </tr>
+}
+    </tbody>
+    
+</table>
+    <h5>Total a pagar: $ @ViewData["TotalCarrito"]</h5> 
+    
+
+
+ <form asp-controller="Carrito" asp-action="LimpiarCarrito">
+  <button type="submit" class="btn btn-secondary btn-sm">
+  <i class="bi bi-box-arrow-in-left"></i>
+ Vaciar carrito
+</button>
+</form>

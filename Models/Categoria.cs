@@ -1,14 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-namespace LaTiendita.Models
-
+﻿namespace LaTiendita.Models
 {
     public class Categoria
     {
-        [Key]
-        public int CategoriaId { get; set; }
-
-        public String Nombre { get; set; }
-
-        public ICollection<ProductoBis> Productos { get; set; }
-}
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public List<Producto> Productos { get; set; } = new List<Producto>();
+    }
 }

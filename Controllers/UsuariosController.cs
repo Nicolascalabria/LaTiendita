@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LaTiendita.Models;
 using LaTiendita.Stock;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace LaTiendita.Controllers
 {
-    
     public class UsuariosController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -22,14 +19,12 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
-        // GET: Usuarios
         [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Usuarios.ToListAsync());
         }
 
-        // GET: Usuarios/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Usuarios == null)
@@ -38,7 +33,7 @@ namespace LaTiendita.Controllers
             }
 
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(m => m.UsuarioId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (usuario == null)
             {
                 return NotFound();
@@ -47,11 +42,11 @@ namespace LaTiendita.Controllers
             return View(usuario);
         }
 
-        // GET: Usuarios/Create
         public IActionResult Create()
         {
             return View();
         }
+
 
         [AllowAnonymous]
         public IActionResult NoAutorizado()
@@ -61,25 +56,37 @@ namespace LaTiendita.Controllers
 
         public IActionResult Registrarse()
         {
-            return View("Create");
+            return View("Registrarse");
         }
-        // POST: Usuarios/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("UsuarioId,Email,Nombre")] Usuario usuario)
+        public async Task<IActionResult> Create([Bind("Id, Email, Nombre")] Usuario usuario)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(usuario);
                 await _context.SaveChangesAsync();
+                LoguearseUsuario(usuario);
                 return RedirectToAction("Index", "Catalogo");
             }
-            return RedirectToAction("Create", "Usuario");
+            return RedirectToAction("Registrarse", "Usuario");
         }
 
-        // GET: Usuarios/Edit/5
+        private void LoguearseUsuario(Usuario usuario)
+        {
+            ClaimsIdentity identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            identity.AddClaim(new Claim(ClaimTypes.Name, usuario.Nombre));
+            identity.AddClaim(new Claim(ClaimTypes.Role, "USUARIO"));
+            identity.AddClaim(new Claim(ClaimTypes.Email, usuario.Email));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()));
+            identity.AddClaim(new Claim(ClaimTypes.GivenName, usuario.Nombre));
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        }
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Usuarios == null)
@@ -95,14 +102,11 @@ namespace LaTiendita.Controllers
             return View(usuario);
         }
 
-        // POST: Usuarios/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("UsuarioId,Email,Nombre")] Usuario usuario)
+        public async Task<IActionResult> Edit(int id, [Bind("Id, Email, Nombre, Rol")] Usuario usuario)
         {
-            if (id != usuario.UsuarioId)
+            if (id != usuario.Id)
             {
                 return NotFound();
             }
@@ -116,7 +120,7 @@ namespace LaTiendita.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UsuarioExists(usuario.UsuarioId))
+                    if (!UsuarioExists(usuario.Id))
                     {
                         return NotFound();
                     }
@@ -130,7 +134,6 @@ namespace LaTiendita.Controllers
             return View(usuario);
         }
 
-        // GET: Usuarios/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Usuarios == null)
@@ -139,7 +142,7 @@ namespace LaTiendita.Controllers
             }
 
             var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(m => m.UsuarioId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (usuario == null)
             {
                 return NotFound();
@@ -148,7 +151,6 @@ namespace LaTiendita.Controllers
             return View(usuario);
         }
 
-        // POST: Usuarios/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -169,7 +171,7 @@ namespace LaTiendita.Controllers
 
         private bool UsuarioExists(int id)
         {
-          return _context.Usuarios.Any(e => e.UsuarioId == id);
+          return _context.Usuarios.Any(e => e.Id == id);
         }
     }
 }

@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 using LaTiendita.Models;
 using LaTiendita.Stock;
 
 namespace LaTiendita.Controllers
 {
+    
     public class ProductoTallesController : Controller
     {
         private readonly BaseDeDatos _context;
@@ -19,14 +17,13 @@ namespace LaTiendita.Controllers
             _context = context;
         }
 
-        // GET: ProductoTalles
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Index()
         {
             var baseDeDatos = _context.ProductoTalle.Include(p => p.Producto).Include(p => p.Talle);
             return View(await baseDeDatos.ToListAsync());
         }
 
-        // GET: ProductoTalles/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.ProductoTalle == null)
@@ -37,7 +34,7 @@ namespace LaTiendita.Controllers
             var productoTalle = await _context.ProductoTalle
                 .Include(p => p.Producto)
                 .Include(p => p.Talle)
-                .FirstOrDefaultAsync(m => m.ProductoTalleId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (productoTalle == null)
             {
                 return NotFound();
@@ -46,20 +43,17 @@ namespace LaTiendita.Controllers
             return View(productoTalle);
         }
 
-        // GET: ProductoTalles/Create
+
         public IActionResult Create()
         {
-            ViewData["ProductoId"] = new SelectList(_context.ProductoBis, "ProductoId", "Nombre");
+            ViewData["ProductoId"] = new SelectList(_context.Producto, "ProductoId", "Nombre");
             ViewData["TalleId"] = new SelectList(_context.Talles, "TalleId", "Nombre");
             return View();
         }
 
-        // POST: ProductoTalles/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductoTalleId,TalleId,ProductoId,Cantidad")] ProductoTalle productoTalle)
+        public async Task<IActionResult> Create([Bind("Id,TalleId,ProductoId,Cantidad")] ProductoTalle productoTalle)
         {
             if (ModelState.IsValid)
             {
@@ -67,12 +61,12 @@ namespace LaTiendita.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ProductoId"] = new SelectList(_context.ProductoBis, "ProductoId", "Nombre", productoTalle.ProductoId);
+            ViewData["ProductoId"] = new SelectList(_context.Producto, "ProductoId", "Nombre", productoTalle.ProductoId);
             ViewData["TalleId"] = new SelectList(_context.Talles, "TalleId", "Nombre", productoTalle.TalleId);
             return View(productoTalle);
         }
 
-        // GET: ProductoTalles/Edit/5
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.ProductoTalle == null)
@@ -85,19 +79,16 @@ namespace LaTiendita.Controllers
             {
                 return NotFound();
             }
-            ViewData["ProductoId"] = new SelectList(_context.ProductoBis, "ProductoId", "Nombre", productoTalle.ProductoId);
+            ViewData["ProductoId"] = new SelectList(_context.Producto, "ProductoId", "Nombre", productoTalle.ProductoId);
             
             return View(productoTalle);
         }
 
-        // POST: ProductoTalles/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ProductoTalleId,TalleId,ProductoId,Cantidad")] ProductoTalle productoTalle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,TalleId,ProductoId,Cantidad")] ProductoTalle productoTalle)
         {
-            if (id != productoTalle.ProductoTalleId)
+            if (id != productoTalle.Id)
             {
                 return NotFound();
             }
@@ -111,7 +102,7 @@ namespace LaTiendita.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductoTalleExists(productoTalle.ProductoTalleId))
+                    if (!ProductoTalleExists(productoTalle.Id))
                     {
                         return NotFound();
                     }
@@ -122,12 +113,12 @@ namespace LaTiendita.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ProductoId"] = new SelectList(_context.ProductoBis, "ProductoId", "Nombre", productoTalle.ProductoId);
+            ViewData["ProductoId"] = new SelectList(_context.Producto, "ProductoId", "Nombre", productoTalle.ProductoId);
             ViewData["TalleId"] = new SelectList(_context.Talles, "TalleId", "Nombre", productoTalle.TalleId);
             return View(productoTalle);
         }
 
-        // GET: ProductoTalles/Delete/5
+
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.ProductoTalle == null)
@@ -138,7 +129,7 @@ namespace LaTiendita.Controllers
             var productoTalle = await _context.ProductoTalle
                 .Include(p => p.Producto)
                 .Include(p => p.Talle)
-                .FirstOrDefaultAsync(m => m.ProductoTalleId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (productoTalle == null)
             {
                 return NotFound();
@@ -147,7 +138,7 @@ namespace LaTiendita.Controllers
             return View(productoTalle);
         }
 
-        // POST: ProductoTalles/Delete/5
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -168,7 +159,7 @@ namespace LaTiendita.Controllers
 
         private bool ProductoTalleExists(int id)
         {
-          return _context.ProductoTalle.Any(e => e.ProductoTalleId == id);
+          return _context.ProductoTalle.Any(e => e.Id == id);
         }
     }
 }

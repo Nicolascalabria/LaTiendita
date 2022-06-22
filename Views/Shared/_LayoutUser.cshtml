@@ -20,7 +20,20 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Ingresar</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Catalogo" asp-action="Index">Catálogo</a>
+                        </li>                        
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Carrito" asp-action="Index">Carrito</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav flex-grow-1 justify-content-end">
+                        <li class="nav-item">
+                            <form asp-controller="Home" asp-action="Logout">
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    <i class="bi bi-box-arrow-in-left"></i>
+                                    Cerrar sesión
+                                </button>
+                            </form>
                         </li>
                     </ul>
                 </div>
