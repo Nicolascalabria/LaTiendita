@@ -56,20 +56,35 @@ namespace LaTiendita.Controllers
 
         public IActionResult Registrarse()
         {
-            return View("Registrarse");
+            return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id, Email, Nombre")] Usuario usuario)
         {
+
             if (ModelState.IsValid)
             {
-                _context.Add(usuario);
-                await _context.SaveChangesAsync();
-                LoguearseUsuario(usuario);
-                return RedirectToAction("Index", "Catalogo");
+                var existente = _context
+               .Usuarios
+               .Where(o => o.Email.ToUpper().Equals(usuario.Email.ToUpper()))
+                .FirstOrDefault();
+
+                if (existente == null)
+                {
+                    _context.Add(usuario);
+                    await _context.SaveChangesAsync();
+                    LoguearseUsuario(usuario);
+                    return RedirectToAction("Index", "Catalogo");
+
+                }
+                else
+                {
+                    return RedirectToAction("Index", "Home");
+                }
             }
+
             return RedirectToAction("Registrarse", "Usuario");
         }
 

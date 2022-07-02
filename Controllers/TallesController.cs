@@ -50,13 +50,45 @@ namespace LaTiendita.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("TalleId,Nombre")] Talle talle)
         {
-            if (ModelState.IsValid)
+            if (await ValidarTalle(talle.Nombre))
             {
-                _context.Add(talle);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (ModelState.IsValid)
+                {
+                    _context.Add(talle);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+               
             }
-            return View(talle);
+
+            return RedirectToAction("TalleExiste", "Talles");
+
+        }
+
+        public async Task<IActionResult> TalleExiste()
+        {
+            return View();
+        }
+
+        private async Task<bool> ValidarTalle(string nombre)
+        {
+            bool validar = false;
+
+            var nombreTalle = await _context.Talles
+               .FirstOrDefaultAsync(m => m.Nombre.ToUpper() == nombre.ToUpper());
+
+            if (nombreTalle == null)
+            {
+                validar = nombre.ToUpper() == "XS" ||
+                          nombre.ToUpper() == "S" ||
+                          nombre.ToUpper() == "M" ||
+                          nombre.ToUpper() == "L" ||
+                          nombre.ToUpper() == "XL" ||
+                          nombre.ToUpper() == "XXL" ||
+                          nombre.ToUpper() == "XXXL";
+            }
+
+            return validar; 
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -83,27 +115,32 @@ namespace LaTiendita.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (await ValidarTalle(talle.Nombre))
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    _context.Update(talle);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TalleExists(talle.Id))
+                    try
                     {
-                        return NotFound();
+                        _context.Update(talle);
+                        await _context.SaveChangesAsync();
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
-                        throw;
+                        if (!TalleExists(talle.Id))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
+                return View(talle);
             }
-            return View(talle);
+
+            return RedirectToAction("Edit", "Talles");
         }
 
         public async Task<IActionResult> Delete(int? id)
@@ -112,6 +149,8 @@ namespace LaTiendita.Controllers
             {
                 return NotFound();
             }
+
+
 
             var talle = await _context.Talles
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -123,14 +162,52 @@ namespace LaTiendita.Controllers
             return View(talle);
         }
 
+        private bool sePuedeBorrar(List<ProductoTalle> productos)
+        {
+            bool noHayProducto = true;
+
+            int i = 0;
+
+            while (i < productos.Count() && noHayProducto)
+            {
+                if (productos[i].Cantidad > 0)
+                {
+                    noHayProducto = false;
+                }
+                else
+                {
+                    i++;
+                }
+            }
+
+            return noHayProducto;
+        }
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var talle = await _context.Talles.FindAsync(id);
-            _context.Talles.Remove(talle);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            var productosAChequear = await _context.ProductoTalle
+               .Where(x => x.TalleId == id)
+               .ToListAsync();
+
+            if (sePuedeBorrar(productosAChequear))
+            {
+                var talle = await _context.Talles.FindAsync(id);
+                _context.Talles.Remove(talle);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            else
+            {
+                return RedirectToAction(nameof(TalleConStock));
+
+            }
+        }
+
+        public async Task<IActionResult> TalleConStock()
+        {
+            return View(await _context.Talles.ToListAsync());
         }
 
         private bool TalleExists(int id)

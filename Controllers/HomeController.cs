@@ -21,7 +21,7 @@ namespace LaTiendita.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            return View("Index2");
+            return View();
 
         }
 
@@ -51,7 +51,7 @@ namespace LaTiendita.Controllers
                 }
                 else
                 {
-                    return RedirectToAction("Registrarse", "Usuarios");
+                    return RedirectToAction("Registrarse", "Usuarios", email);
                 }
 
             }
