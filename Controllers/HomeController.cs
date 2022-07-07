@@ -108,8 +108,8 @@ namespace LaTiendita.Controllers
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-
-            await LimpiarCarrito();
+            
+            await VaciarCarrito();
             await HttpContext.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
@@ -124,5 +124,60 @@ namespace LaTiendita.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
+        [HttpPost, ActionName("DevolverStock")]
+        private async Task<IActionResult> DevolverStock(CarritoProducto productoARecuperar)
+        {
+
+
+            var productoTalle = await _context.ProductoTalle
+                .FirstOrDefaultAsync(x => x.ProductoId == productoARecuperar.ProductoId && x.TalleId == productoARecuperar.TalleId);
+
+
+            productoTalle.Cantidad += productoARecuperar.Cantidad;
+            _context.ProductoTalle.Update(productoTalle);
+
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+
+        public async Task<IActionResult> VaciarCarrito()
+        {
+
+
+            var cookieUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var carritoDb = await _context.Carritos
+                .FirstOrDefaultAsync(x => x.UsuarioId == cookieUserId);
+
+            if (carritoDb != null)
+            {
+
+                var productos = _context.CarritoProducto
+                        .ToList();
+
+                foreach (var item in productos)
+                {
+                    _ = DevolverStock(item);
+                }
+
+                _ = LimpiarCarrito();
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Index", "Carrito");
+
+        }
+
+
+
+
     }
+
+
 }

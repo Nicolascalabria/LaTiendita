@@ -155,6 +155,18 @@ namespace LaTiendita.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+        public async Task<IActionResult> NoStock()
+        {
+            var productos = await _context.Producto
+                .Include(x => x.Talles)
+                .Include(p => p.Categoria)
+                .ToListAsync();
+
+            ViewData["Talles"] = new SelectList(_context.Talles, "Id", "Nombre");
+            return View(productos);
+           
+        }
         private bool ProductoExists(int id)
         {
           return _context.Producto.Any(e => e.Id == id);

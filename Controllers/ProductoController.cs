@@ -172,11 +172,11 @@ namespace LaTiendita.Controllers
         [HttpPost, ActionName("AddTalle")]
         public async Task<IActionResult> AddTalle(int productoId, int talleId, int cantidad)
         {
-            if (! await ProductoExists(productoId))
-                return NotFound();
+            //if (! await ProductoExists(productoId))
+            //    return NotFound();
 
-            if (! await TalleExists(talleId))
-                return NotFound();
+            //if (! await TalleExists(talleId))
+            //    return NotFound();
 
             var productoTalle = await _context.ProductoTalle
                 .FirstOrDefaultAsync(x => x.ProductoId == productoId && x.TalleId == talleId);
@@ -193,6 +193,12 @@ namespace LaTiendita.Controllers
 
             return Ok();
         }
+
+
+
+
+
+
     }
 }
     

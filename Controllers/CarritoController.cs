@@ -48,28 +48,76 @@ namespace LaTiendita.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            if (!await ProductoExists(productoId))
-                return NotFound();      
+            //if (!await ProductoExists(productoId))
+            //    return NotFound();      
 
-            if (!await TalleExists(talleId))
-                return NotFound();      
+            //if (!await TalleExists(talleId))
+            //    return NotFound();
+            //    
+            
 
             var productosDelCarrito = carritoDb.Productos
                 .Any(x => x.ProductoId == productoId && x.TalleId == talleId);
 
+            var hayStock = await HayStock(productoId, talleId);
+
+            var productoEnStock =  _context.ProductoTalle.FirstOrDefault(e => e.ProductoId == productoId && e.TalleId == talleId);
+
             if (!productosDelCarrito)
-                carritoDb.Productos.Add(new CarritoProducto() { ProductoId = productoId, TalleId = talleId, Cantidad = cantidad });
+            {
+
+                if (hayStock)
+                {
+                    carritoDb.Productos.Add(new CarritoProducto() { ProductoId = productoId, TalleId = talleId, Cantidad = cantidad });
+                    productoEnStock.Cantidad -= cantidad;
+                    _context.ProductoTalle.Update(productoEnStock);
+                }
+                else
+                {
+                    
+                    return RedirectToAction("NoStock","Catalogo");
+                }
+
+
+            }
             else
             {
-                var productoTalle = carritoDb.Productos.FirstOrDefault(x => x.ProductoId == productoId && x.TalleId == talleId);
-                productoTalle.Cantidad += cantidad;
-                _context.Carritos.Update(carritoDb);
+
+                if (hayStock)
+                {
+                    var productoTalle = carritoDb.Productos.FirstOrDefault(x => x.ProductoId == productoId && x.TalleId == talleId);
+                    productoTalle.Cantidad += cantidad;
+                    productoEnStock.Cantidad -= cantidad;
+                    _context.Carritos.Update(carritoDb);
+                    _context.ProductoTalle.Update(productoEnStock);
+                }
+                else
+                {
+                    return RedirectToAction("NoStock","Catalogo");
+                }
+
+
             }
 
             await _context.SaveChangesAsync();
 
             return Ok();
         }
+
+
+        private async Task<bool> HayStock(int productoId, int talleId)
+        {
+            var hayStock = false;
+            ProductoTalle productoAchequear = _context.ProductoTalle.FirstOrDefault(e => e.ProductoId == productoId && e.TalleId == talleId);
+
+            if(productoAchequear != null && productoAchequear.Cantidad > 0)
+            {
+                hayStock = true;
+            }
+                
+            return  hayStock;
+        }
+
 
         private async Task<bool> ProductoExists(int id)
         {
@@ -118,6 +166,75 @@ namespace LaTiendita.Controllers
             }
             
             return RedirectToAction("Index", "Carrito");    
+        }
+
+
+        [HttpPost, ActionName("DevolverStock")]
+        private async Task<IActionResult> DevolverStock(CarritoProducto productoARecuperar)
+        {
+            
+
+            var productoTalle = await _context.ProductoTalle
+                .FirstOrDefaultAsync(x => x.ProductoId == productoARecuperar.ProductoId && x.TalleId == productoARecuperar.TalleId);
+
+           
+                productoTalle.Cantidad += productoARecuperar.Cantidad;
+                _context.ProductoTalle.Update(productoTalle);
+           
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+        
+
+        public async Task<IActionResult> VaciarCarrito()
+        {
+
+
+            var cookieUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var carritoDb = await _context.Carritos
+                .FirstOrDefaultAsync(x => x.UsuarioId == cookieUserId);
+
+            if (carritoDb != null)
+            {
+
+                var productos = _context.CarritoProducto
+                        .ToList();
+
+                foreach (var item in productos)
+                {
+                    _ = DevolverStock(item);
+                }
+
+                _ = LimpiarCarrito();
+
+                await _context.SaveChangesAsync();
+            }
+
+                return RedirectToAction("Index", "Carrito");
+
+            
+
+        }
+
+        public async Task<IActionResult> Comprar()
+        {
+            var productosEnChango = await _context.CarritoProducto.ToListAsync();
+
+            if(productosEnChango.Count > 0)
+            {
+                await LimpiarCarrito();
+
+                return View();
+            }
+
+
+            return RedirectToAction("Index");
+
+
+
         }
 
     }

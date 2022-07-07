@@ -50,10 +50,18 @@
     <h5>Total a pagar: $ @ViewData["TotalCarrito"]</h5> 
     
 
-
- <form asp-controller="Carrito" asp-action="LimpiarCarrito">
+<div class="d-flex flex-row">
+ <form asp-controller="Carrito" asp-action="VaciarCarrito">
   <button type="submit" class="btn btn-secondary btn-sm">
   <i class="bi bi-box-arrow-in-left"></i>
  Vaciar carrito
 </button>
 </form>
+
+<form asp-controller="Carrito" asp-action="Comprar">
+  <button type="submit" class="btn btn-secondary btn-sm" style="margin-left:10px">
+  <i class="bi bi-box-arrow-in-left"></i>
+ Comprar
+</button>
+</form>
+</div>
