@@ -114,6 +114,7 @@ namespace LaTiendita.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+           
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "CategoriaId", "Nombre", Producto.CategoriaId);
             ViewData["TalleId"] = new SelectList(_context.ProductoTalle, "TalleId", "Nombre", Producto.Talles);
             return View(Producto);
@@ -181,12 +182,22 @@ namespace LaTiendita.Controllers
             var productoTalle = await _context.ProductoTalle
                 .FirstOrDefaultAsync(x => x.ProductoId == productoId && x.TalleId == talleId);
 
-            if(productoTalle is null)
+            if(cantidad > 0)
+            {
+
+            
+            if (productoTalle is null)
                 _context.ProductoTalle.Add(new ProductoTalle() { ProductoId = productoId, TalleId = talleId, Cantidad = cantidad });
             else
             {
+
+
+
                 productoTalle.Cantidad += cantidad;
                 _context.ProductoTalle.Update(productoTalle);
+
+
+            }
             }
 
             await _context.SaveChangesAsync();

@@ -50,7 +50,7 @@ namespace LaTiendita.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("TalleId,Nombre")] Talle talle)
         {
-            if (await ValidarTalle(talle.Nombre))
+            if (!await ExisteTalle(talle.Nombre))
             {
                 if (ModelState.IsValid)
                 {
@@ -59,7 +59,7 @@ namespace LaTiendita.Controllers
                     return RedirectToAction(nameof(Index));
                 }
                
-            }
+            }           
 
             return RedirectToAction("TalleExiste", "Talles");
 
@@ -70,25 +70,13 @@ namespace LaTiendita.Controllers
             return View();
         }
 
-        private async Task<bool> ValidarTalle(string nombre)
+        private async Task<bool> ExisteTalle(string nombre)
         {
-            bool validar = false;
 
             var nombreTalle = await _context.Talles
-               .FirstOrDefaultAsync(m => m.Nombre.ToUpper() == nombre.ToUpper());
+               .AnyAsync(m => m.Nombre.ToUpper() == nombre.ToUpper());
 
-            if (nombreTalle == null)
-            {
-                validar = nombre.ToUpper() == "XS" ||
-                          nombre.ToUpper() == "S" ||
-                          nombre.ToUpper() == "M" ||
-                          nombre.ToUpper() == "L" ||
-                          nombre.ToUpper() == "XL" ||
-                          nombre.ToUpper() == "XXL" ||
-                          nombre.ToUpper() == "XXXL";
-            }
-
-            return validar; 
+            return nombreTalle; 
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -115,7 +103,7 @@ namespace LaTiendita.Controllers
                 return NotFound();
             }
 
-            if (await ValidarTalle(talle.Nombre))
+            if (await ExisteTalle(talle.Nombre))
             {
                 if (ModelState.IsValid)
                 {
