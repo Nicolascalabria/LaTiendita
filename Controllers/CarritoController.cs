@@ -32,7 +32,7 @@ namespace LaTiendita.Controllers
 
 
         [HttpPost, ActionName("AddProduct")]
-        public async Task<IActionResult> AgregarProductoAlCarrito(int productoId, int talleId, int cantidad)
+        public async Task<ActionResult<bool>> AgregarProductoAlCarrito(int productoId, int talleId, int cantidad)
         {
             var cookieUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
@@ -41,7 +41,7 @@ namespace LaTiendita.Controllers
                     .ThenInclude(x => x.Talle)
                 .FirstOrDefaultAsync(x => x.UsuarioId == cookieUserId);
 
-            if(carritoDb is null)
+            if (carritoDb is null)
             {
                 carritoDb = new Carrito() { UsuarioId = cookieUserId };
                 _context.Carritos.Add(carritoDb);
@@ -54,58 +54,46 @@ namespace LaTiendita.Controllers
             //if (!await TalleExists(talleId))
             //    return NotFound();
             //    
-            
+            if(!HayStock(productoId, talleId))
+            {
+                TempData["msgError"] = "No hay stock del producto seleccionado.";
+                return false;
+            }
 
             var productosDelCarrito = carritoDb.Productos
                 .Any(x => x.ProductoId == productoId && x.TalleId == talleId);
 
-            var hayStock = await HayStock(productoId, talleId);
+            var hayStock =  HayStock(productoId, talleId);
 
             var productoEnStock =  _context.ProductoTalle.FirstOrDefault(e => e.ProductoId == productoId && e.TalleId == talleId);
 
             if (!productosDelCarrito)
-            {
-
-                if (hayStock)
-                {
+            {              
                     carritoDb.Productos.Add(new CarritoProducto() { ProductoId = productoId, TalleId = talleId, Cantidad = cantidad });
                     productoEnStock.Cantidad -= cantidad;
-                    _context.ProductoTalle.Update(productoEnStock);
-                }
-                else
-                {
-                    
-                    return RedirectToAction("NoStock","Catalogo");
-                }
-
-
+                    _context.ProductoTalle.Update(productoEnStock);                   
+                    TempData["msgOk"] = "Se agrego al chango";
+                                         
             }
             else
             {
-
-                if (hayStock)
-                {
                     var productoTalle = carritoDb.Productos.FirstOrDefault(x => x.ProductoId == productoId && x.TalleId == talleId);
                     productoTalle.Cantidad += cantidad;
                     productoEnStock.Cantidad -= cantidad;
                     _context.Carritos.Update(carritoDb);
-                    _context.ProductoTalle.Update(productoEnStock);
-                }
-                else
-                {
-                    return RedirectToAction("NoStock","Catalogo");
-                }
-
+                    _context.ProductoTalle.Update(productoEnStock);    
+                    TempData["msgOk"] = "Se agrego al chango";
+                              
+                            
 
             }
-
-            await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
 
             return Ok();
         }
 
 
-        private async Task<bool> HayStock(int productoId, int talleId)
+        private bool HayStock(int productoId, int talleId)
         {
             var hayStock = false;
             ProductoTalle productoAchequear = _context.ProductoTalle.FirstOrDefault(e => e.ProductoId == productoId && e.TalleId == talleId);

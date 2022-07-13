@@ -5,6 +5,12 @@
 }
 
 <h1>Talles</h1>
+@if (@TempData["msgBorrado"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["msgBorrado"]
+    </div>
+}
 
 <p>
     <a asp-action="Create">Crear talle</a>

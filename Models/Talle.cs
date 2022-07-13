@@ -6,7 +6,7 @@ namespace LaTiendita.Models
     {
         public int Id { get; set; }
 
-        [RegularExpression("S|M|L|XL|s|m|l|xl",ErrorMessage ="Talle inválido")]
+        [RegularExpression("XS|S|M|L|XL|s|m|l|xl|xs",ErrorMessage ="Talle inválido")]
         public string Nombre { get; set; }
     }
 }

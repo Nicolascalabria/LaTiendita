@@ -5,7 +5,15 @@
 }
 
 <h1>Create</h1>
+<h1>Catálogo</h1>
+@if (@TempData["msgError"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+     @TempData["msgError"]
+    </div>
 
+
+}
 
 <h4>Talle</h4>
 <hr />
