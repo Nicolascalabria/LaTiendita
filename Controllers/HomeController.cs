@@ -115,10 +115,7 @@ namespace LaTiendita.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
@@ -148,7 +145,6 @@ namespace LaTiendita.Controllers
 
         public async Task<IActionResult> VaciarCarrito()
         {
-
 
             var cookieUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 

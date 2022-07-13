@@ -47,13 +47,7 @@ namespace LaTiendita.Controllers
                 _context.Carritos.Add(carritoDb);
                 await _context.SaveChangesAsync();
             }
-
-            //if (!await ProductoExists(productoId))
-            //    return NotFound();      
-
-            //if (!await TalleExists(talleId))
-            //    return NotFound();
-            //    
+    
             if(!HayStock(productoId, talleId))
             {
                 TempData["msgError"] = "No hay stock del producto seleccionado.";
@@ -107,15 +101,6 @@ namespace LaTiendita.Controllers
         }
 
 
-        private async Task<bool> ProductoExists(int id)
-        {
-            return await _context.Producto.AnyAsync(e => e.Id == id);
-        }
-
-        private async Task<bool> TalleExists(int id)
-        {
-            return await _context.Talles.AnyAsync(e => e.Id == id);
-        }
 
         private double calcularTotal()
         {

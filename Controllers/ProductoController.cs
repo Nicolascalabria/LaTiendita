@@ -51,7 +51,7 @@ namespace LaTiendita.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductoId,Nombre,Precio,Detalle,CategoriaId")] Producto Producto)
+        public async Task<IActionResult> Create([Bind("ProductoId,Nombre,Precio,Detalle,Imagen,CategoriaId")] Producto Producto)
         {
             if (ModelState.IsValid)
             {
@@ -87,7 +87,7 @@ namespace LaTiendita.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id, ProductoId, Nombre, Precio, Detalle, CategoriaId")] Producto Producto)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Precio,Detalle,Imagen,CategoriaId")] Producto Producto)
         {
             if (id != Producto.Id)
             {
@@ -173,11 +173,7 @@ namespace LaTiendita.Controllers
         [HttpPost, ActionName("AddTalle")]
         public async Task<IActionResult> AddTalle(int productoId, int talleId, int cantidad)
         {
-            //if (! await ProductoExists(productoId))
-            //    return NotFound();
-
-            //if (! await TalleExists(talleId))
-            //    return NotFound();
+            
 
             var productoTalle = await _context.ProductoTalle
                 .FirstOrDefaultAsync(x => x.ProductoId == productoId && x.TalleId == talleId);
@@ -185,17 +181,12 @@ namespace LaTiendita.Controllers
             if(cantidad > 0)
             {
 
-            
             if (productoTalle is null)
                 _context.ProductoTalle.Add(new ProductoTalle() { ProductoId = productoId, TalleId = talleId, Cantidad = cantidad });
             else
             {
-
-
-
                 productoTalle.Cantidad += cantidad;
                 _context.ProductoTalle.Update(productoTalle);
-
 
             }
             }
@@ -204,10 +195,6 @@ namespace LaTiendita.Controllers
 
             return Ok();
         }
-
-
-
-
 
 
     }
